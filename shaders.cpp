@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
@@ -17,24 +18,25 @@ namespace {
 	// declaring vertex shader (used for getting (and maybe transforming) the vertexes
 	const char *vertexShaderSource = "#version 330 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
+		"layout (location = 1) in vec3 aColor;\n"
+		"out vec3 ourColor;\n"
+		/* "out vec4 vertexColor;\n" */
 		"void main()\n"
 		"{\n"
-		"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+		"   gl_Position = vec4(aPos, 1.0);\n"
+		"	ourColor = aColor;\n"
+		/* "	vertexColor = vec4(aPos, 1.0);\n" */
 		"}\0";
 
 	// declaring fragment shader (used for colouring and such)
 	const char *fragmentShaderSource = "#version 330 core\n"
+		/* "in vec4 vertexColor;\n" */
 		"out vec4 FragColor;\n"
+		"in vec3 ourColor;\n"
+		/* "uniform vec4 ourColor;\n" */
 		"void main()\n"
 		"{\n"
-		"	FragColor = vec4(0.5f, 0.5f, 0.7f, 1.0f);\n"
-		"}\0";
-
-	const char *fragmentShaderSource2 = "#version 330 core\n"
-		"out vec4 FragColor;\n"
-		"void main()\n"
-		"{\n"
-		"	FragColor = vec4(0.7f, 0.7f, 0.5f, 1.0f);\n"
+		"	FragColor = vec4(ourColor, 1.0);\n"
 		"}\0";
 }
 
@@ -117,37 +119,18 @@ int main()
 	}
 
 	// creating a shader program
-	unsigned int shaderProgram1;
-	shaderProgram1 = glCreateProgram();
+	unsigned int shaderProgram;
+	shaderProgram = glCreateProgram();
 
-	glAttachShader(shaderProgram1, vertexShader); // link vertex
-	glAttachShader(shaderProgram1, fragmentShader); // link fragment
-	glLinkProgram(shaderProgram1);
-
-	// checking for linking errors
-	glGetProgramiv(shaderProgram1, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram1, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
-	}
-
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource2, NULL);
-	glCompileShader(fragmentShader);
-
-	// creating a shader program
-	unsigned int shaderProgram2;
-	shaderProgram2 = glCreateProgram();
-
-	glAttachShader(shaderProgram2, vertexShader); // link vertex
-	glAttachShader(shaderProgram2, fragmentShader); // link fragment
-	glLinkProgram(shaderProgram2);
+	glAttachShader(shaderProgram, vertexShader); // link vertex
+	glAttachShader(shaderProgram, fragmentShader); // link fragment
+	glLinkProgram(shaderProgram);
 
 	// checking for linking errors
-	glGetProgramiv(shaderProgram2, GL_LINK_STATUS, &success);
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		glGetProgramInfoLog(shaderProgram2, 512, NULL, infoLog);
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
 	}
 
@@ -156,23 +139,24 @@ int main()
 	glDeleteShader(fragmentShader);
 
 	// setting up vertex data
-	float vertices[] = {
-		0.5f, 0.5f, 0.0f, // top right
-		0.5f, -0.5f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f, // bottom left
-		-0.5f, 0.5f, 0.0f // top left
-	};
+	/* float vertices[] = { */
+	/* 	0.5f, 0.5f, 0.0f, // top right */
+	/* 	0.5f, -0.5f, 0.0f, // bottom right */
+	/* 	-0.5f, -0.5f, 0.0f, // bottom left */
+	/* 	-0.5f, 0.5f, 0.0f // top left */
+	/* }; */
 
+	// coords + colours
 	float trig1[] = {
-		-0.5f, -0.5f, 0.0f,
-		-0.25f, 0.5f, 0.0f,
-		0.0f, -0.5f, 0.0f
+		-0.5f, -0.5f, 0.0f, 1.0f, 0.2f, 0.0f,
+		0.0f, 0.5f, 0.0f, 0.2f, 1.0f, 0.2f,
+		0.5f, -0.5f, 0.0f, 0.2f, 0.2f, 1.0f
 	};
-	float trig2[] = {
-		0.0f, 0.5f, 0.0f,
-		0.25f, -0.5f, 0.0f,
-		0.5f, 0.5f, 0.0f
-	};
+	/* float trig2[] = { */
+	/* 	0.0f, 0.5f, 0.0f, */
+	/* 	0.25f, -0.5f, 0.0f, */
+	/* 	0.5f, 0.5f, 0.0f */
+	/* }; */
 	// setting up indices for tiangles
 	unsigned int indices[] = {
 		0, 1, 3,
@@ -181,46 +165,32 @@ int main()
 
 
 	// making VBO for first trig
-	unsigned int VBO1, VAO1, EBO1;
-	glGenVertexArrays(1, &VAO1); // vertex array object
-	glGenBuffers(1, &VBO1); // vertex buffer object
-	glGenBuffers(1, &EBO1); // element buffer object
+	unsigned int VBO, VAO, EBO;
+	glGenVertexArrays(1, &VAO); // vertex array object
+	glGenBuffers(1, &VBO); // vertex buffer object
+	glGenBuffers(1, &EBO); // element buffer object
 
 	// VAO1 goes first
-	glBindVertexArray(VAO1);
+	glBindVertexArray(VAO);
 
 	// binding and passing vertex data to VBO1
-	glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(trig1), trig1, GL_STATIC_DRAW);
 	/* glBufferData(GL_ARRAY_BUFFER, sizeof(two_trigs), two_trigs, GL_STATIC_DRAW); */
 
 	// binding and passing indices to VBO1
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// configuring vertex attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	/* glBindBuffer(GL_ARRAY_BUFFER, 0); */
 	glBindVertexArray(0);
-
-	unsigned int VBO2, VAO2, EBO2;
-	glGenVertexArrays(1, &VAO2);
-	glGenBuffers(1, &VBO2);
-	glGenBuffers(1, &EBO2);
-
-	glBindVertexArray(VAO2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(trig2), trig2, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
-	glEnableVertexAttribArray(0);
-
-	/* glBindBuffer(GL_ARRAY_BUFFER, 0); */
-	glBindVertexArray(0);
-
 
 	/* glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); */
 
@@ -233,18 +203,19 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(shaderProgram1);
+		// color changing
+		/* float timeValue = glfwGetTime(); */
+		/* float redValue = (sin(timeValue - 2) / 2.0f) + 0.5f; */
+		/* float greenValue = (sin(timeValue) / 2.0f) + 0.5f; */
+		/* float blueValue = (sin(timeValue + 2) / 2.0f) + 0.5f; */
+		/* int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor"); */
+		/* glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f); */
+
+		glUseProgram(shaderProgram);
 
 		// first triangle
-		glBindVertexArray(VAO1);
+		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		glUseProgram(shaderProgram2);
-
-		// second triangle
-		glBindVertexArray(VAO2);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		/* glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); */
 
 		// show pixels on window
 		glfwSwapBuffers(window);
@@ -252,16 +223,11 @@ int main()
 		glfwPollEvents();
 	}
 
-	glDeleteVertexArrays(1, &VAO1);
-	glDeleteBuffers(1, &VBO1);
-	glDeleteBuffers(1, &EBO1);
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 
-	glDeleteVertexArrays(1, &VAO2);
-	glDeleteBuffers(1, &VBO2);
-	glDeleteBuffers(1, &EBO2);
-
-	glDeleteProgram(shaderProgram1);
-	glDeleteProgram(shaderProgram2);
+	glDeleteProgram(shaderProgram);
 
 
 	glfwTerminate();
@@ -270,8 +236,8 @@ int main()
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	std::cout << "width " << width << std::endl;
-	std::cout << "height " << height << std::endl;
+	/* std::cout << "width " << width << std::endl; */
+	/* std::cout << "height " << height << std::endl; */
 	glViewport(0, 0, width, height);
 }
 
