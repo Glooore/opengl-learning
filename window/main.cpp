@@ -24,7 +24,7 @@ void processInput(GLFWwindow* window);
 // better way to do that
 float vertices[] = {
 	0.5f, 0.5f, 0.0f,
-	0.5f, -0.5f, 0.0f,
+	0.5f, -0.5f, -0.3f,
 	-0.5f, -0.5f, 0.0f,
 	-0.5f, 0.5f, 0.0f
 };

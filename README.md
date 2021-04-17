@@ -1,3 +1,3 @@
 # opengl-learning
 
-stuff used for learning opengl and such
+git repo for tutorials from https://learnopengl.com
