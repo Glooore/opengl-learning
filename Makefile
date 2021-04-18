@@ -13,3 +13,7 @@ triangle: triangle.cpp
 shader_ex: shader_ex.cpp
 	$(CC) $(CFLAGS) -o shader_ex shader_ex.cpp src/glad.c
 	./shader_ex
+
+texture_ex: texture_ex.cpp
+	$(CC) $(CFLAGS) -o texture_ex texture_ex.cpp src/glad.c
+	./texture_ex
