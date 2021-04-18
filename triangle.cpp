@@ -11,8 +11,8 @@ void processInput(GLFWwindow* window);
 // extern will fail with 'undefined reference' or so
 namespace {
 	// initializing window dimensions
-	static const int window_width = 800;
-	static const int window_height = 600;
+	static const int window_width = 400;
+	static const int window_height = 300;
 
 	// declaring vertex shader (used for getting (and maybe transforming) the vertexes
 	const char *vertexShaderSource = "#version 330 core\n"

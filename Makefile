@@ -1,6 +1,6 @@
 CC=g++
 
-CFLAGS=-lGL -lX11 -lglfw -lXi -ldl -Wall -I ./include
+CFLAGS=-lGL -lX11 -lglfw -lXi -ldl -Wall -I ./include/
 
 main: main.cpp
 	$(CC) $(CFLAGS) -o main main.cpp src/glad.c
@@ -10,6 +10,6 @@ triangle: triangle.cpp
 	$(CC) $(CFLAGS) -o triangle triangle.cpp src/glad.c
 	./triangle
 
-shaders: shaders.cpp
-	$(CC) $(CFLAGS) -o shaders shaders.cpp src/glad.c
-	./shaders
+shader_ex: shader_ex.cpp
+	$(CC) $(CFLAGS) -o shader_ex shader_ex.cpp src/glad.c
+	./shader_ex
