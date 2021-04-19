@@ -25,3 +25,7 @@ transform_ex: transform_ex.cpp
 coordinate_ex: coordinate_ex.cpp
 	$(CC) $(CFLAGS) -o coordinate_ex coordinate_ex.cpp src/glad.c
 	./coordinate_ex
+
+camera_ex: camera_ex.cpp
+	$(CC) $(CFLAGS) -o camera_ex camera_ex.cpp src/glad.c
+	./camera_ex

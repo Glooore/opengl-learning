@@ -16,6 +16,8 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 // function prototype for processing input (basically, check if escape is pressed)
 void processInput(GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 // anonymous namespace -- global but cannot be accessed by other files
 // extern will fail with 'undefined reference' or so
@@ -24,12 +26,23 @@ namespace {
 	static const int window_width = 800;
 	static const int window_height = 600;
 
-	float mix = 0.2;
+	float mix = 0.5f;
+	float fov = 45.0f;
 
-	float offset_x = 0.0;
-	float offset_y = 0.0;
+	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 
-	float rotation = 0.0;
+	float yaw = -90.0f;
+	float pitch = 0.0f;
+
+	float lastX = 400;
+	float lastY = 300;
+
+	float deltaTime = 0.0f;
+	float lastFrame = 0.0f;
+
+	bool firstMouse = true;
 }
 
 int main()
@@ -74,14 +87,6 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	Shader ourShader("shaders/coordinate.vert", "shaders/coordinate.frag");
-
-	// setting up vertex data
-	/* float vertices[] = { */
-	/* 	0.5f, 0.5f,   0.0f,		1.0f, 0.0f, 0.0f,	1.0f, 1.0f, // top right */
-	/* 	0.5f, -0.5f,  0.0f,		0.0f, 1.0f, 0.0f,	1.0f, 0.0f,// bottom right */
-	/* 	-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	0.0f, 0.0f,// bottom left */
-	/* 	-0.5f, 0.5f,  0.0f,		1.0f, 1.0f, 0.0f,	0.0f, 1.0f // top left */
-	/* }; */
 	
 	// cube vertices
 	float vertices[] = {
@@ -239,19 +244,24 @@ int main()
 	//matrix stufffffff
 	/* glm::mat4 trans = glm::mat4(1.0f); */
 
-	glm::mat4 projection;
-	projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-
 	/* unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform"); */
 	unsigned int projectionLoc = glGetUniformLocation(ourShader.ID, "projection");
-	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glEnable(GL_DEPTH_TEST);
 
+	const float radius = 10.0f;
 
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		// input processing
 		processInput(window);
 
@@ -260,16 +270,14 @@ int main()
 
 		ourShader.setFloat("mix_f", mix);
 
-		glm::mat4 view = glm::mat4(1.0f);
-		view = glm::translate(view, glm::vec3(offset_x, offset_y, -3.0f));
-		view = glm::rotate(view, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 projection = glm::perspective(glm::radians(fov), (float) window_width / (float) window_height, 0.1f, 100.0f);
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, (float) glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 		unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 
 		// first triangle
@@ -300,9 +308,6 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		std::cout << glfwGetTime() << std::endl;
-
-
 		// show pixels on window
 		glfwSwapBuffers(window);
 		// check for key pressess
@@ -319,41 +324,74 @@ int main()
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	/* std::cout << "width " << width << std::endl; */
-	/* std::cout << "height " << height << std::endl; */
 	glViewport(0, 0, width, height);
 }
 
 void processInput(GLFWwindow* window)
 {
+	float cameraSpeed = 5.0f * deltaTime;
 	// if ESC is pressed, close the window
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		offset_y -= 0.1;
+		cameraPos += cameraSpeed * cameraFront;
 	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		offset_y += 0.1;
+		cameraPos -= cameraSpeed * cameraFront;
 	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		offset_x += 0.1;
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		offset_x -= 0.1;
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	/* if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) */
+	/* { */
+	/* 	cameraPos += cameraSpeed * cameraUp; */
+	/* } */
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse)
 	{
-		rotation += 1;
-	}
-	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-	{
-		rotation -= 1;
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
 	}
 
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch)); 
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+	cameraFront = glm::normalize(front);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	fov -= (float)yoffset;
+	if (fov < 1.0f) fov = 1.0f;
+	if (fov > 45.0f) fov = 45.0f;
 }
