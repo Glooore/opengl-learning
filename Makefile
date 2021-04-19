@@ -21,3 +21,7 @@ texture_ex: texture_ex.cpp
 transform_ex: transform_ex.cpp
 	$(CC) $(CFLAGS) -o transform_ex transform_ex.cpp src/glad.c
 	./transform_ex
+
+coordinate_ex: coordinate_ex.cpp
+	$(CC) $(CFLAGS) -o coordinate_ex coordinate_ex.cpp src/glad.c
+	./coordinate_ex
