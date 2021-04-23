@@ -18,6 +18,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void move_player();
 
 // anonymous namespace -- global but cannot be accessed by other files
 // extern will fail with 'undefined reference' or so
@@ -43,6 +44,10 @@ namespace {
 	float lastFrame = 0.0f;
 
 	bool firstMouse = true;
+
+	glm::vec3 velocity = glm::vec3(0.0f);
+	float acceleration = 1.5f;
+	float deceleration = 1.0f;
 }
 
 int main()
@@ -84,6 +89,7 @@ int main()
 		return -1;
 	}
 
+	glViewport(0, 0, window_width, window_height);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	Shader ourShader("shaders/coordinate.vert", "shaders/coordinate.frag");
@@ -312,6 +318,7 @@ int main()
 		glfwSwapBuffers(window);
 		// check for key pressess
 		glfwPollEvents();
+		move_player();
 	}
 
 	glDeleteVertexArrays(1, &VAO);
@@ -337,24 +344,32 @@ void processInput(GLFWwindow* window)
 	}
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		cameraPos += cameraSpeed * cameraFront;
+		velocity += acceleration * deltaTime * cameraFront;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		cameraPos -= cameraSpeed * cameraFront;
+		velocity -= acceleration * deltaTime * cameraFront;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		velocity -= glm::normalize(glm::cross(cameraFront, cameraUp)) * acceleration * deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		velocity += glm::normalize(glm::cross(cameraFront, cameraUp)) * acceleration * deltaTime;
 	}
-	/* if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) */
-	/* { */
-	/* 	cameraPos += cameraSpeed * cameraUp; */
-	/* } */
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		velocity += glm::normalize(glm::cross(glm::cross(cameraFront, cameraUp), cameraFront)) * acceleration * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+	{
+		velocity -= glm::normalize(glm::cross(glm::cross(cameraFront, cameraUp), cameraFront)) * acceleration * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		velocity = velocity - velocity * deceleration * deltaTime;
+	}
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -394,4 +409,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	fov -= (float)yoffset;
 	if (fov < 1.0f) fov = 1.0f;
 	if (fov > 45.0f) fov = 45.0f;
+}
+
+void move_player()
+{
+	cameraPos += velocity * deltaTime;
 }

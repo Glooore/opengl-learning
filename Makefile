@@ -29,3 +29,7 @@ coordinate_ex: coordinate_ex.cpp
 camera_ex: camera_ex.cpp
 	$(CC) $(CFLAGS) -o camera_ex camera_ex.cpp src/glad.c
 	./camera_ex
+
+lighting_ex: lighting_ex.cpp
+	$(CC) $(CFLAGS) -o lighting_ex lighting_ex.cpp src/glad.c
+	./lighting_ex
