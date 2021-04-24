@@ -92,7 +92,7 @@ int main()
 	glViewport(0, 0, window_width, window_height);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	Shader ourShader("shaders/coordinate.vert", "shaders/coordinate.frag");
+	Shader ourShader("./coordinate.vert", "./coordinate.frag");
 	
 	// cube vertices
 	float vertices[] = {
@@ -170,7 +170,7 @@ int main()
 
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrChannels;
-	unsigned char *data = stbi_load("./textures/container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load("../textures/container.jpg", &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -194,7 +194,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	data = stbi_load("./textures/face.png", &width, &height, &nrChannels, 0);
+	data = stbi_load("../textures/face.png", &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);

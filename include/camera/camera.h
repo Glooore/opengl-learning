@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-enum camera_movement {FORWARD, BACKWARD, LEFT, RIGHT};
+enum camera_movement {FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN};
 
 namespace {
 	float YAW = -90.0f;
@@ -20,6 +20,17 @@ namespace {
 class Camera
 {
 	private:
+		void updateCameraVectors()
+		{
+			glm::vec3 front;
+			front.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
+			front.y = sin(glm::radians(_pitch));
+			front.z = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));
+
+			_camera_front = glm::normalize(front);
+			_camera_right = glm::normalize(glm::cross(_camera_front, _world_up));
+			_camera_up = glm::normalize(glm::cross(_camera_right, _camera_front));
+		}
 	protected:
 		glm::vec3 _camera_pos, _camera_up, _camera_front, _camera_right;
 		glm::vec3 _world_up;
@@ -42,19 +53,8 @@ class Camera
 			_fov = FOV;
 			_speed = SPEED;
 			_mouse_sensitivity = SENSITIVITY;
-		}
 
-		void updateCameraVectors()
-		{
-			glm::vec3 front;
-			front.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
-			front.y = sin(glm::radians(_pitch));
-			front.z = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));
-
-			_camera_front = glm::normalize(front);
-			_camera_right = glm::normalize(glm::cross(_camera_front, _world_up));
-			_camera_up = glm::normalize(glm::cross(_camera_right, _camera_front));
-
+			updateCameraVectors();
 		}
 
 		glm::mat4 getViewMatrix(void)
@@ -67,6 +67,11 @@ class Camera
 			return _fov;
 		}
 
+		glm::vec3 getPosition(void)
+		{
+			return _camera_pos;
+		}
+
 		void processKeyboard(camera_movement direction, float delta_time)
 		{
 			float _velocity = _speed * delta_time;
@@ -74,6 +79,8 @@ class Camera
 			if (direction == BACKWARD) _camera_pos -= _camera_front * _velocity;
 			if (direction == LEFT) _camera_pos -= _camera_right * _velocity;
 			if (direction == RIGHT) _camera_pos += _camera_right * _velocity;
+			if (direction == UP) _camera_pos += _world_up * _velocity;
+			if (direction == DOWN) _camera_pos -= _world_up * _velocity;
 		}
 		
 		void processMouseMovement(float x_offset, float y_offset, 

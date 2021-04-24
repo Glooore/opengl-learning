@@ -1,7 +1,6 @@
 #include <iostream>
 // for rand() that I haven't used.
-#include <stdlib.h>
-// for sin() and such that I haven't used
+/* #include <stdlib.h> */
 #include <cmath>
 
 #include "glad/glad.h"
@@ -74,9 +73,10 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 
 	// creating the shader object and compiling vertex and fragment shaders
-	Shader shader("shaders/lighting.vert", "shaders/lighting.frag");
-	Shader light_shader("shaders/lighting2.vert", "shaders/lighting2.frag");
+	Shader shader("./lighting.vert", "./lighting.frag");
+	Shader light_shader("./lighting2.vert", "./lighting2.frag");
 
+	// cube vertices
 	float vertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
      0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
@@ -161,7 +161,10 @@ int main(int argc, char** argv)
 	{
 		current_frame = glfwGetTime();
 
-		glm::vec3 light_position = glm::vec3(1.2f, sin(current_frame), 2.0f);
+		float light_x = sin(current_frame);
+		float light_y = cos(current_frame);
+
+		glm::vec3 light_position = glm::vec3(light_x, light_y, 1.2f);
 
 		delta_time = current_frame - last_frame;
 		last_frame = current_frame;
@@ -242,6 +245,14 @@ void process_input(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
 		camera.processKeyboard(LEFT, delta_time);
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		camera.processKeyboard(UP, delta_time);
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+	{
+		camera.processKeyboard(DOWN, delta_time);
 	}
 }
 

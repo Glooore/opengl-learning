@@ -5,10 +5,6 @@
 #include <GLFW/glfw3.h>
 #include "shader/shader.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -25,11 +21,6 @@ namespace {
 	static const int window_height = 600;
 
 	float mix = 0.2;
-
-	float offset_x = 0.0;
-	float offset_y = 0.0;
-
-	float rotation = 0.0;
 }
 
 int main()
@@ -73,79 +64,40 @@ int main()
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	Shader ourShader("shaders/coordinate.vert", "shaders/coordinate.frag");
+	Shader ourShader("shaders/shader.vert", "shaders/shader.frag");
 
 	// setting up vertex data
-	/* float vertices[] = { */
-	/* 	0.5f, 0.5f,   0.0f,		1.0f, 0.0f, 0.0f,	1.0f, 1.0f, // top right */
-	/* 	0.5f, -0.5f,  0.0f,		0.0f, 1.0f, 0.0f,	1.0f, 0.0f,// bottom right */
-	/* 	-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	0.0f, 0.0f,// bottom left */
-	/* 	-0.5f, 0.5f,  0.0f,		1.0f, 1.0f, 0.0f,	0.0f, 1.0f // top left */
-	/* }; */
-	
-	// cube vertices
 	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		0.5f, 0.5f,   0.0f,		1.0f, 0.0f, 0.0f,	1.0f, 1.0f, // top right
+		0.5f, -0.5f,  0.0f,		0.0f, 1.0f, 0.0f,	1.0f, 0.0f,// bottom right
+		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	0.0f, 0.0f,// bottom left
+		-0.5f, 0.5f,  0.0f,		1.0f, 1.0f, 0.0f,	0.0f, 1.0f // top left
 	};
 
-	glm::vec3 cubePositions[] = {
-		glm::vec3( 0.0f,  0.0f,  0.0f), 
-		glm::vec3( 2.0f,  5.0f, -15.0f), 
-		glm::vec3(-1.5f, -2.2f, -2.5f),  
-		glm::vec3(-3.8f, -2.0f, -12.3f),  
-		glm::vec3( 2.4f, -0.4f, -3.5f),  
-		glm::vec3(-1.7f,  3.0f, -7.5f),  
-		glm::vec3( 1.3f, -2.0f, -2.5f),  
-		glm::vec3( 1.5f,  2.0f, -2.5f), 
-		glm::vec3( 1.5f,  0.2f, -1.5f), 
-		glm::vec3(-1.3f,  1.0f, -1.5f)  
-	};
+	/* float trig2[] = { */
+	/* 	0.0f, 0.5f, 0.0f, */
+	/* 	0.25f, -0.5f, 0.0f, */
+	/* 	0.5f, 0.5f, 0.0f */
+	/* }; */
 
 	// setting up indices for tiangles
 	unsigned int indices[] = {
 		0, 1, 3,
 		1, 2, 3
 	};
+
+	/* // coords + colours */
+	/* float trig1[] = { */
+	/* 	-0.25f, -0.25f, 0.0f, 1.0f, 0.2f, 0.0f, */
+	/* 	0.0f, 0.25f, 0.0f, 0.2f, 1.0f, 0.2f, */
+	/* 	0.25f, -0.25f, 0.0f, 0.2f, 0.2f, 1.0f */
+	/* }; */
+
+	/* float texCoords[] = { */
+	/* 	0.0f, 0.0f, */
+	/* 	1.0f, 0.0f, */
+	/* 	0.5f, 1.0f */
+	/* } */
 
 	unsigned int texture1;
 	glGenTextures(1, &texture1);
@@ -159,7 +111,7 @@ int main()
 
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrChannels;
-	unsigned char *data = stbi_load("./textures/container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load("../textures/container.jpg", &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -183,7 +135,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	data = stbi_load("./textures/face.png", &width, &height, &nrChannels, 0);
+	data = stbi_load("../textures/face.png", &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -196,6 +148,9 @@ int main()
 	}
 
 	stbi_image_free(data);
+
+
+
 
 	// making VBO for first trig
 	unsigned int VBO, VAO, EBO;
@@ -216,13 +171,13 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// configuring vertex attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray(0);
 
-	/* glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float))); */
-	/* glEnableVertexAttribArray(1); */
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	/* glBindBuffer(GL_ARRAY_BUFFER, 0); */
@@ -233,22 +188,6 @@ int main()
 	glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
 	ourShader.setInt("texture2", 1);
 
-	// matrix stuff
-	/* trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); */
-
-	//matrix stufffffff
-	/* glm::mat4 trans = glm::mat4(1.0f); */
-
-	glm::mat4 projection;
-	projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-
-	/* unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform"); */
-	unsigned int projectionLoc = glGetUniformLocation(ourShader.ID, "projection");
-	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-	glEnable(GL_DEPTH_TEST);
-
-
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -256,21 +195,16 @@ int main()
 		processInput(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 
+		// color changing
+		float timeValue = glfwGetTime();
+		float offset_x = sin(timeValue) / 2.0f;
+		/* float offset_x = 0; */
+
+		/* glUseProgram(shaderProgram); */
+		ourShader.setFloat("offset", offset_x);
 		ourShader.setFloat("mix_f", mix);
-
-		glm::mat4 view = glm::mat4(1.0f);
-		view = glm::translate(view, glm::vec3(offset_x, offset_y, -3.0f));
-		view = glm::rotate(view, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-		unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, (float) glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-		unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
 
 		// first triangle
 		glActiveTexture(GL_TEXTURE0);
@@ -280,28 +214,7 @@ int main()
 
 		glBindVertexArray(VAO);
 		/* glDrawArrays(GL_TRIANGLES, 0, 6); */
-		/* glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); */
-		for (int i = 0; i < 10; i ++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			float angle = 10.0f * (i - 2);
-
-			model = glm::translate(model, cubePositions[i]);
-			if (i % 3 == 0)
-			{
-				model = glm::rotate(model, (float) glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 0.2f, 0.0f));
-			}
-			else
-			{
-				model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			}
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		std::cout << glfwGetTime() << std::endl;
-
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// show pixels on window
 		glfwSwapBuffers(window);
@@ -333,27 +246,10 @@ void processInput(GLFWwindow* window)
 	}
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
-		offset_y -= 0.1;
+		mix = mix + 0.1;
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
-		offset_y += 0.1;
+		mix = mix - 0.1;
 	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-	{
-		offset_x += 0.1;
-	}
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-	{
-		offset_x -= 0.1;
-	}
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-	{
-		rotation += 1;
-	}
-	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-	{
-		rotation -= 1;
-	}
-
 }
