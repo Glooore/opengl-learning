@@ -6,8 +6,17 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec3 LightPos;
 
+struct Material 
+{
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	float shininess;
+};
+
 uniform vec3 object_color;
 uniform vec3 light_color;
+uniform Material material;
 
 void main()
 {
