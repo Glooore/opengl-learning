@@ -10,7 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <stb_image.h>
 
 // function prototypes for resizing the window
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
